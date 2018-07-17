@@ -1,0 +1,8 @@
+[
+  "api_test.py::Test_Star_Wars_API::test_delete_planet",
+  "api_test.py::Test_Star_Wars_API::test_get_planet_mongo_id",
+  "api_test.py::Test_Star_Wars_API::test_get_planet_mongo_name",
+  "api_test.py::Test_Star_Wars_API::test_get_planet_swapi_id",
+  "api_test.py::Test_Star_Wars_API::test_get_planet_swapi_name",
+  "api_test.py::Test_Star_Wars_API::test_post_planet"
+]

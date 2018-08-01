@@ -1,0 +1,1 @@
+PATH=/usr/local/opt/erlang@20/bin:/usr/local/opt/erlang@20/bin:/Users/isaias/Documents/Kubernetes/code/GoogleCloud/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Xamarin Workbooks.app/Contents/SharedSupport/path-bin:/usr/local/sbin

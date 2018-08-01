@@ -1,13 +1,16 @@
 import swapi
 import requests
 import json
+import asyncio
 from flask import Flask, jsonify, request  
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from flask.json import JSONEncoder
-from bson import json_util
-from bson import ObjectId
+from bson import json_util,ObjectId
 from pymongo import MongoClient
+from celery import Celery
+# from flask_celery import make_celery
+# from flask.ext.mongoalchemy import MongoAlchemy
 
 
 class JSONEncoder(json.JSONEncoder): 
@@ -17,29 +20,22 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
+
+
 app = Flask(__name__)
 app.config['MONGO_DBNAME'] = 'star_wars_db'
 app.config['MONGO_URI'] = 'mongodb://isaiasgomes:isaiasgomes0@ds239931.mlab.com:39931/star_wars_db' #URI MLAB
 
+# app.config['CELERY_BROKER_URL'] = 'ampq://localhost//'
+# app.config['CELERY_BACKEND'] = 'mongodb://isaiasgomes:isaiasgomes0@ds239931.mlab.com:39931/star_wars_db' #URI MLAB
+# app.config['MONGOALCHEMY_CONNECTION_STRING']= 'mongodb://isaiasgomes:isaiasgomes0@ds239931.mlab.com:39931/star_wars_db' #URI MLAB
+
+# celery = make_celery(app)
 mongo = PyMongo(app)
 
 @app.route('/planeta', methods=['GET'])
 def get_all(): 
-    planeta = mongo.db.planeta 
-    output = []
-    i = 1
-    #SWAPI
-    planets = swapi.get_all("planets")
-    for r in planets.order_by("created"):
-        output.append({'_id':i,'nome':r.name,'clima':r.climate,'terreno':r.terrain,'quantidade de aparições em filmes: ' : len(r.films)})
-        i+=1
-    #MONGODB
-    for p in planeta.find():
-        output.append({'_id' :JSONEncoder().encode(p['_id']),'nome' : p['nome'], 'clima' : p['clima'], 'terreno' : p['terreno'],'quantidade de aparições em filmes: ' : 0 })
-
-        #output = JSONEncoder().encode(p)
-    #return output
-    return jsonify({'planetas' : output})
+    return jsonify({'planetas' : get_all_planets()})
     
 
 @app.route('/planeta/id/<ObjectId:_id>', methods=['GET'])
@@ -79,10 +75,8 @@ def add():
     planeta_id = planeta.insert({'nome' : nome, 'clima' : clima, 'terreno' : terreno})
     p = planeta.find_one({'_id' : planeta_id})
     
-    #output = {'_id' : planeta_id,'nome' : p['nome'], 'clima' : p['clima'], 'terreno' : p['terreno'] }
     output = JSONEncoder().encode(p)
     return output
-    #return jsonify({'result' : output})
 
 
 @app.route('/planeta/<nome>', methods=['PUT'])
@@ -114,6 +108,41 @@ def delete(nome):
         output = 'Nenhum planeta encontrado'
     
     return jsonify({'result' : output})
+
+
+def get_all_planets(): 
+    result = []
+    result.append(get_all_swapi())
+    result.append(get_all_mongo())
+    return result
+
+def get_all_swapi():
+    n = 1
+    result = []
+    mensagem = {'Erro':'Nenhum planeta encontrado'}
+    #SWAPI
+    planets = swapi.get_all("planets")
+    for r in planets.order_by("created"):
+        result.append({'_id':n,'nome':r.name,'clima':r.climate,'terreno':r.terrain,'quantidade de aparições em filmes: ' : len(r.films)})
+        n+=1
+    if len(result) == 0:
+        return mensagem
+    else:
+        return result
+
+def get_all_mongo():
+    planeta = mongo.db.planeta
+    result = []
+    mensagem = {'Erro':'Nenhum planeta encontrado'}
+    #MONGODB
+    for p in planeta.find():
+        result.append({'_id' :JSONEncoder().encode(p['_id']),'nome' : p['nome'], 'clima' : p['clima'], 'terreno' : p['terreno'],'quantidade de aparições em filmes: ' : 0 })
+    
+    if len(result) == 0:
+        return mensagem
+    else:
+        return result
+
 
 
 
